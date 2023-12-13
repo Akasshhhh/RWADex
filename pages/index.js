@@ -469,7 +469,7 @@ export default function Home() {
                 )} rUSD`
               : `You will get ${utils.formatEther(
                   tokenToBeReceivedAfterSwap
-                )} Eth`}
+                )} RBNT`}
           </div>
           <button className={styles.button1} onClick={_swapTokens}>
             Swap
