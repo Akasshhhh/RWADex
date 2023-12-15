@@ -17,6 +17,9 @@ import {
 import { swapTokens, getAmountOfTokensReceivedFromSwap } from "../utils/swap";
 
 export default function Home() {
+
+  const [valueOfCoin , setCoin] = useState("RUSD");
+
   /** General state variables */
   // loading is set to true when the transaction is mining and set to false when
   // the transaction has mined
@@ -124,6 +127,7 @@ export default function Home() {
         await getAmounts();
         setSwapAmount("");
       }
+      //Success
     } catch (err) {
       console.error(err);
       setLoading(false);
@@ -263,9 +267,11 @@ export default function Home() {
     try {
       // Get the provider from web3Modal, which in our case is MetaMask
       // When used for the first time, it prompts the user to connect their wallet
+      console.log("ydbas");
       await getProviderOrSigner();
       setWalletConnected(true);
     } catch (err) {
+      console.log("ydbas");
       console.error(err);
     }
   };
@@ -434,90 +440,227 @@ export default function Home() {
       );
     } else {
       return (
-        <div>
-          <input
-            type="number"
-            placeholder="Amount"
-            onChange={async (e) => {
-              setSwapAmount(e.target.value || "");
-              // Calculate the amount of tokens user would receive after the swap
-              await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
-            }}
-            className={styles.input}
-            value={swapAmount}
-          />
-          <select
-            className={styles.select}
-            name="dropdown"
-            id="dropdown"
-            onChange={async () => {
-              setEthSelected(!ethSelected);
-              // Initialize the values back to zero
-              await _getAmountOfTokensReceivedFromSwap(0);
-              setSwapAmount("");
-            }}
-          >
-            <option value="eth">RBNT</option>
-            <option value="cryptoDevToken">rUSD</option>
-          </select>
-          <br />
-          <div className={styles.inputDiv}>
-            {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
-            {ethSelected
-              ? `You will get ${utils.formatEther(
-                  tokenToBeReceivedAfterSwap
-                )} rUSD`
-              : `You will get ${utils.formatEther(
-                  tokenToBeReceivedAfterSwap
-                )} RBNT`}
+        // <div>
+        //   <input
+        //     type="number"
+        //     placeholder="Amount"
+        //     onChange={async (e) => {
+        //       setSwapAmount(e.target.value || "");
+        //       // Calculate the amount of tokens user would receive after the swap
+        //       await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
+        //     }}
+        //     className={styles.input}
+        //     value={swapAmount}
+        //   />
+        //   <select
+        //     className={styles.select}
+        //     name="dropdown"
+        //     id="dropdown"
+        //     onChange={async () => {
+        //       setEthSelected(!ethSelected);
+        //       // Initialize the values back to zero
+        //       await _getAmountOfTokensReceivedFromSwap(0);
+        //       setSwapAmount("");
+        //     }}
+        //   >
+        //     <option value="eth">RBNT</option>
+        //     <option value="cryptoDevToken">rUSD</option>
+        //   </select>
+        //   <br />
+        //   <div className={styles.inputDiv}>
+        //     {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
+        //     {ethSelected
+        //       ? `You will get ${utils.formatEther(
+        //           tokenToBeReceivedAfterSwap
+        //         )} rUSD`
+        //       : `You will get ${utils.formatEther(
+        //           tokenToBeReceivedAfterSwap
+        //         )} RBNT`}
+        //   </div>
+        //   <button className={styles.button1} onClick={_swapTokens}>
+        //     Swap
+        //   </button>
+        // </div>
+
+          <div>
+
+          
+
           </div>
-          <button className={styles.button1} onClick={_swapTokens}>
-            Swap
-          </button>
-        </div>
+
       );
     }
   };
 
   return (
-    <div>
-      <Head>
-        <title>RWADex</title>
-        <meta name="description" content="Whitelist-Dapp" />
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-      <div className={styles.main}>
-        <div>
-          <h1 className={styles.title}>Welcome to RWADex!</h1>
-          <div className={styles.description}>
-            Exchange rUSD &#60;&#62; RBNT
-          </div>
-          <div>
-            <button
-              className={styles.button}
-              onClick={() => {
-                setLiquidityTab(!liquidityTab);
-              }}
-            >
-              Liquidity
-            </button>
-            <button
-              className={styles.button}
-              onClick={() => {
-                setLiquidityTab(false);
-              }}
-            >
-              Swap
-            </button>
-          </div>
-          {renderButton()}
-        </div>
-        <div>
-        </div>
-      </div>
+    
+    <div className="w-[100%] h-[100vh] bg-[rgb(32,30,45)]">
 
-      <footer className={styles.footer}>
-      </footer>
+    
+    <div className="flex-col ">
+    <div className=" flex pt-10 mx-20 ">
+    <button className="p-1 rounded-xl border-2 border-purple-600">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-14 h-14 text-purple-600  ">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+    </svg>
+    </button>
+    {walletConnected?<p className="p-5   ml-auto text-xl bg-pink-600 text-white font-semibold rounded-3xl border-black border-[1px]">Connected</p>:    <button onClick={connectWallet} className="px-5   ml-auto text-xl bg-pink-600 text-white font-semibold rounded-3xl border-black border-[1px]">Connect wallet</button>}
+    
     </div>
+    
+    <div className="flex-col [&>*]:flex gap-10 [&>*]:justify-center ">
+    <p className="text-4xl font-extrabold text-white">RWADex</p>
+    <p className="text-xl font-semibold  text-white">Exchange token in seconds</p>
+    <div className="  flex justify-center align-middle">
+    {!walletConnected && 
+      <div className="flex-col border-2 border-purple-900 mt-10 rounded-2xl p-32">
+    <button className="p-3 px-10  bg-white rounded-2xl font-bold w-[100%]  text-black  text-2xl">Swap</button>
+     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-40 text-white ml-7 h-40 ">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+    </svg> 
+    <p className="font-semibold text-2xl text-white" >Connect your wallet.</p>
+ </div>   
+}
+        
+{walletConnected && 
+<div className="flex-col border-2 border-purple-900 p-10 [&>div]:p-5 mt-10 rounded-2xl">
+<div className="flex-col">
+<div className="flex ">
+  <input  onChange={async (e) => {
+              setSwapAmount(e.target.value || "");
+              // Calculate the amount of tokens user would receive after the swap
+              await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
+            }}
+
+   className="outline-none  p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type="number"  placeholder="0.0"/>
+  <select
+  
+  onChange={async (e) => {
+              setEthSelected(!ethSelected);
+              // Initialize the values back to zero
+              await _getAmountOfTokensReceivedFromSwap(0);
+              setSwapAmount("");
+              setCoin(e.target.value)
+            }}
+             className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
+    <option value={"RUSD"}>RBNT</option>
+    <option value={"RBNT"}>RUSD</option>
+  </select>
+
+  
+  
+</div>
+
+<p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin==="RBNT"? utils.formatEther(cdBalance):utils.formatEther(ethBalance)} </p>
+
+</div>
+<div className="flex-col ">
+<div className="flex">
+  <input
+  value={utils.formatEther(tokenToBeReceivedAfterSwap)}
+
+  className="bg-[rgb(35,33,48)] text-white outline-none p-5 px-10 text-2xl rounded-l-lg " placeholder="0.0"/>
+  <select className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
+    <option value={valueOfCoin==="RUSD"?"RBNT":"RUSD"}>{valueOfCoin==="RUSD"?"RUSD":"RBNT"}</option> 
+      </select>
+</div>
+<p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin==="RBNT"?utils.formatEther(ethBalance) :utils.formatEther(cdBalance)}</p>
+</div>
+
+<button onClick={_swapTokens} className="py-2  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">Swap</button>
+
+</div>
+}
+
+    </div>
+
+    </div>
+    </div>
+    
+    </div> 
+    
   );
 }
+
+
+
+// <div>
+// <div className={styles.description}>
+//   You have:
+//   <br />
+//   {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
+//   {utils.formatEther(cdBalance)} rUSD
+//   <br />
+//   {utils.formatEther(ethBalance)} RBNT
+//   <br />
+//   {utils.formatEther(lpBalance)} RWADex LP tokens
+// </div>
+// <div>
+//   {/* If reserved CD is zero, render the state for liquidity zero where we ask the user
+//   how much initial liquidity he wants to add else just render the state where liquidity is not zero and
+//   we calculate based on the `Eth` amount specified by the user how much `CD` tokens can be added */}
+//   {utils.parseEther(reservedCD.toString()).eq(zero) ? (
+//     <div>
+//       <input
+//         type="number"
+//         placeholder="Amount of RBNT"
+//         onChange={(e) => setAddEther(e.target.value || "0")}
+//         className={styles.input}
+//       />
+//       <input
+//         type="number"
+//         placeholder="Amount of CryptoDev tokens"
+//         onChange={(e) =>
+//           setAddCDTokens(
+//             BigNumber.from(utils.parseEther(e.target.value || "0"))
+//           )
+//         }
+//         className={styles.input}
+//       />
+//       <button className={styles.button1} onClick={_addLiquidity}>
+//         Add
+//       </button>
+//     </div>
+
+
+
+// <div>
+    //   <Head>
+    //     <title>RWADex</title>
+    //     <meta name="description" content="Whitelist-Dapp" />
+    //     <link rel="icon" href="/favicon.ico" />
+    //   </Head>
+    //   <div className={styles.main}>
+    //     <div>
+    //       <h1 className={styles.title}>Welcome to RWADex!</h1>
+    //       <div className={styles.description}>
+    //         Exchange rUSD &#60;&#62; RBNT
+    //       </div>
+    //       <div>
+    //         <button
+    //           className={styles.button}
+    //           onClick={() => {
+    //             setLiquidityTab(!liquidityTab);
+    //           }}
+    //         >
+    //           Liquidity
+    //         </button>
+    //         <button
+    //           className={styles.button}
+    //           onClick={() => {
+    //             setLiquidityTab(false);
+    //           }}
+    //         >
+    //           Swap
+    //         </button>
+    //       </div>
+    //       {renderButton()}
+    //     </div>
+    //     <div>
+    //     </div>
+    //   </div>
+
+    //   <footer className={styles.footer}>
+    //   </footer>
+    // </div>

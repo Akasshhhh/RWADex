@@ -15,3 +15,13 @@ a {
 * {
   box-sizing: border-box;
 }
+
+::-webkit-inner-spin-button{
+  display: none;
+}
+::-webkit-outer-spin-button{
+  display: none
+}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
