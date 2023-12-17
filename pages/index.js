@@ -572,7 +572,7 @@ export default function Home() {
 
 <button onClick={_swapTokens} className="py-2  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">Swap</button>
 
-{swapSuccess?<p className="text-white font-semibold text-lg">Swap executed Successfully!</p>}
+{swapSuccess?<p className="text-white font-semibold text-lg">Swap executed Successfully!</p>:<></>}
 </div>
 }
 
