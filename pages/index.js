@@ -24,6 +24,7 @@ export default function Home() {
   // loading is set to true when the transaction is mining and set to false when
   // the transaction has mined
   const [loading, setLoading] = useState(false);
+  const [swapSuccess, setSwapSuccess] = useState(false)
   // We have two tabs in this dapp, Liquidity Tab and Swap Tab. This variable
   // keeps track of which Tab the user is on. If it is set to true this means
   // that the user is on `liquidity` tab else he is on `swap` tab
@@ -128,6 +129,7 @@ export default function Home() {
         setSwapAmount("");
       }
       //Success
+      setSwapSuccess(true);
     } catch (err) {
       console.error(err);
       setLoading(false);
@@ -570,6 +572,7 @@ export default function Home() {
 
 <button onClick={_swapTokens} className="py-2  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">Swap</button>
 
+{swapSuccess?<p className="text-white font-semibold text-lg">Swap executed Successfully!</p>}
 </div>
 }
 
