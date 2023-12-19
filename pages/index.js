@@ -18,7 +18,7 @@ import { swapTokens, getAmountOfTokensReceivedFromSwap } from "../utils/swap";
 
 export default function Home() {
 
-  const [valueOfCoin , setCoin] = useState("RUSD");
+  const [valueOfCoin, setCoin] = useState("RUSD");
 
   /** General state variables */
   // loading is set to true when the transaction is mining and set to false when
@@ -72,10 +72,6 @@ export default function Home() {
   // walletConnected keep track of whether the user's wallet is connected or not
   const [walletConnected, setWalletConnected] = useState(false);
 
-  /**
-   * getAmounts call various functions to retrive amounts for ethbalance,
-   * LP tokens etc
-   */
   const getAmounts = async () => {
     try {
       const provider = await getProviderOrSigner(false);
@@ -102,11 +98,7 @@ export default function Home() {
     }
   };
 
-  /**** SWAP FUNCTIONS ****/
 
-  /**
-   * swapTokens: Swaps  `swapAmountWei` of Eth/rUSDs with `tokenToBeReceivedAfterSwap` amount of Eth/rUSDs.
-   */
   const _swapTokens = async () => {
     try {
       // Convert the amount entered by the user to a BigNumber using the `parseEther` library from `ethers.js`
@@ -137,10 +129,6 @@ export default function Home() {
     }
   };
 
-  /**
-   * _getAmountOfTokensReceivedFromSwap:  Returns the number of Eth/rUSDs that can be received 
-   * when the user swaps `_swapAmountWEI` amount of Eth/rUSDs.
-   */
   const _getAmountOfTokensReceivedFromSwap = async (_swapAmount) => {
     try {
       // Convert the amount entered by the user to a BigNumber using the `parseEther` library from `ethers.js`
@@ -168,17 +156,6 @@ export default function Home() {
     }
   };
 
-  /*** END ***/
-
-  /**** ADD LIQUIDITY FUNCTIONS ****/
-
-  /**
-   * _addLiquidity helps add liquidity to the exchange,
-   * If the user is adding initial liquidity, user decides the ether and CD tokens he wants to add
-   * to the exchange. If he is adding the liquidity after the initial liquidity has already been added
-   * then we calculate the rUSDs he can add, given the Eth he wants to add by keeping the ratios
-   * constant
-   */
   const _addLiquidity = async () => {
     try {
       // Convert the ether amount entered by the user to Bignumber
@@ -204,14 +181,6 @@ export default function Home() {
     }
   };
 
-  /**** END ****/
-
-  /**** REMOVE LIQUIDITY FUNCTIONS ****/
-
-  /**
-   * _removeLiquidity: Removes the `removeLPTokensWei` amount of LP tokens from
-   * liquidity and also the calculated amount of `ether` and `CD` tokens
-   */
   const _removeLiquidity = async () => {
     try {
       const signer = await getProviderOrSigner(true);
@@ -232,11 +201,6 @@ export default function Home() {
     }
   };
 
-  /**
-   * _getTokensAfterRemove: Calculates the amount of `Ether` and `CD` tokens
-   * that would be returned back to user after he removes `removeLPTokenWei` amount
-   * of LP tokens from the contract
-   */
   const _getTokensAfterRemove = async (_removeLPTokens) => {
     try {
       const provider = await getProviderOrSigner();
@@ -260,40 +224,17 @@ export default function Home() {
     }
   };
 
-  /**** END ****/
-
-  /**
-   * connectWallet: Connects the MetaMask wallet
-   */
   const connectWallet = async () => {
     try {
       // Get the provider from web3Modal, which in our case is MetaMask
       // When used for the first time, it prompts the user to connect their wallet
-      console.log("ydbas");
       await getProviderOrSigner();
       setWalletConnected(true);
     } catch (err) {
-      console.log("ydbas");
       console.error(err);
     }
   };
 
-  /**
-   * Returns a Provider or Signer object representing the Ethereum RPC with or
-   * without the signing capabilities of Metamask attached
-   *
-   * A `Provider` is needed to interact with the blockchain - reading
-   * transactions, reading balances, reading state, etc.
-   *
-   * A `Signer` is a special type of Provider used in case a `write` transaction
-   * needs to be made to the blockchain, which involves the connected account
-   * needing to make a digital signature to authorize the transaction being
-   * sent. Metamask exposes a Signer API to allow your website to request
-   * signatures from the user using Signer functions.
-   *
-   * @param {*} needSigner - True if you need the signer, default false
-   * otherwise
-   */
   const getProviderOrSigner = async (needSigner = false) => {
     // Connect to Metamask
     // Since we store `web3Modal` as a reference, we need to access the `current` value to get access to the underlying object
@@ -314,14 +255,8 @@ export default function Home() {
     return web3Provider;
   };
 
-  // useEffects are used to react to changes in state of the website
-  // The array at the end of function call represents what state changes will trigger this effect
-  // In this case, whenever the value of `walletConnected` changes - this effect will be called
   useEffect(() => {
-    // if wallet is not connected, create a new instance of Web3Modal and connect the MetaMask wallet
     if (!walletConnected) {
-      // Assign the Web3Modal class to the reference object by setting it's `current` value
-      // The `current` value is persisted throughout as long as this page is open
       web3ModalRef.current = new Web3Modal({
         network: "goerli",
         providerOptions: {},
@@ -329,14 +264,12 @@ export default function Home() {
       });
       connectWallet();
       getAmounts();
+    } else {
+      getAmounts();
     }
   }, [walletConnected]);
 
-  /*
-      renderButton: Returns a button based on the state of the dapp
-  */
   const renderButton = () => {
-    // If wallet is not connected, return a button which allows them to connect their wllet
     if (!walletConnected) {
       return (
         <button onClick={connectWallet} className={styles.button}>
@@ -345,7 +278,6 @@ export default function Home() {
       );
     }
 
-    // If we are currently waiting for something, return a loading button
     if (loading) {
       return <button className={styles.button}>Loading...</button>;
     }
@@ -356,7 +288,6 @@ export default function Home() {
           <div className={styles.description}>
             You have:
             <br />
-            {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
             {utils.formatEther(cdBalance)} rUSD
             <br />
             {utils.formatEther(ethBalance)} RBNT
@@ -364,9 +295,6 @@ export default function Home() {
             {utils.formatEther(lpBalance)} RWADex LP tokens
           </div>
           <div>
-            {/* If reserved CD is zero, render the state for liquidity zero where we ask the user
-            how much initial liquidity he wants to add else just render the state where liquidity is not zero and
-            we calculate based on the `Eth` amount specified by the user how much `CD` tokens can be added */}
             {utils.parseEther(reservedCD.toString()).eq(zero) ? (
               <div>
                 <input
@@ -442,228 +370,94 @@ export default function Home() {
       );
     } else {
       return (
-        // <div>
-        //   <input
-        //     type="number"
-        //     placeholder="Amount"
-        //     onChange={async (e) => {
-        //       setSwapAmount(e.target.value || "");
-        //       // Calculate the amount of tokens user would receive after the swap
-        //       await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
-        //     }}
-        //     className={styles.input}
-        //     value={swapAmount}
-        //   />
-        //   <select
-        //     className={styles.select}
-        //     name="dropdown"
-        //     id="dropdown"
-        //     onChange={async () => {
-        //       setEthSelected(!ethSelected);
-        //       // Initialize the values back to zero
-        //       await _getAmountOfTokensReceivedFromSwap(0);
-        //       setSwapAmount("");
-        //     }}
-        //   >
-        //     <option value="eth">RBNT</option>
-        //     <option value="cryptoDevToken">rUSD</option>
-        //   </select>
-        //   <br />
-        //   <div className={styles.inputDiv}>
-        //     {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
-        //     {ethSelected
-        //       ? `You will get ${utils.formatEther(
-        //           tokenToBeReceivedAfterSwap
-        //         )} rUSD`
-        //       : `You will get ${utils.formatEther(
-        //           tokenToBeReceivedAfterSwap
-        //         )} RBNT`}
-        //   </div>
-        //   <button className={styles.button1} onClick={_swapTokens}>
-        //     Swap
-        //   </button>
-        // </div>
-
-          <div>
-
-          
-
-          </div>
-
+        <div>
+        </div>
       );
     }
   };
 
   return (
-    
+
     <div className="w-[100%] h-[100vh] bg-[rgb(32,30,45)]">
 
-    
-    <div className="flex-col ">
-    <div className=" flex pt-10 mx-20 ">
-    <button className="p-1 rounded-xl border-2 border-purple-600">
-    
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-14 h-14 text-purple-600  ">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-    </svg>
-    </button>
-    {walletConnected?<p className="p-5   ml-auto text-xl bg-pink-600 text-white font-semibold rounded-3xl border-black border-[1px]">Connected</p>:    <button onClick={connectWallet} className="px-5   ml-auto text-xl bg-pink-600 text-white font-semibold rounded-3xl border-black border-[1px]">Connect wallet</button>}
-    
-    </div>
-    
-    <div className="flex-col [&>*]:flex gap-10 [&>*]:justify-center ">
-    <p className="text-4xl font-extrabold text-white">RWADex</p>
-    <p className="text-xl font-semibold  text-white">Exchange token in seconds</p>
-    <div className="  flex justify-center align-middle">
-    {!walletConnected && 
-      <div className="flex-col border-2 border-purple-900 mt-10 rounded-2xl p-32">
-    <button className="p-3 px-10  bg-white rounded-2xl font-bold w-[100%]  text-black  text-2xl">Swap</button>
-     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-40 text-white ml-7 h-40 ">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
-    </svg> 
-    <p className="font-semibold text-2xl text-white" >Connect your wallet.</p>
- </div>   
-}
-        
-{walletConnected && 
-<div className="flex-col border-2 border-purple-900 p-10 [&>div]:p-5 mt-10 rounded-2xl">
-<div className="flex-col">
-<div className="flex ">
-  <input  onChange={async (e) => {
-              setSwapAmount(e.target.value || "");
-              // Calculate the amount of tokens user would receive after the swap
-              await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
-            }}
 
-   className="outline-none  p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type="number"  placeholder="0.0"/>
-  <select
-  
-  onChange={async (e) => {
-              setEthSelected(!ethSelected);
-              // Initialize the values back to zero
-              await _getAmountOfTokensReceivedFromSwap(0);
-              setSwapAmount("");
-              setCoin(e.target.value)
-            }}
-             className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
-    <option value={"RUSD"}>RBNT</option>
-    <option value={"RBNT"}>RUSD</option>
-  </select>
+      <div className="flex-col ">
+        <div className=" flex pt-10 mx-20 ">
+          <button className="p-1 rounded-xl border-2 border-purple-600">
 
-  
-  
-</div>
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-14 h-14 text-purple-600  ">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+            </svg>
+          </button>
+          {walletConnected ? <p className="p-5   ml-auto text-xl bg-pink-600 text-white font-semibold rounded-3xl border-black border-[1px]">Connected</p> : <button onClick={connectWallet} className="px-5   ml-auto text-xl bg-pink-600 text-white font-semibold rounded-3xl border-black border-[1px]">Connect wallet</button>}
 
-<p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin==="RBNT"? utils.formatEther(cdBalance):utils.formatEther(ethBalance)} </p>
+        </div>
 
-</div>
-<div className="flex-col ">
-<div className="flex">
-  <input
-  value={utils.formatEther(tokenToBeReceivedAfterSwap)}
+        <div className="flex-col [&>*]:flex gap-10 [&>*]:justify-center ">
+          <p className="text-4xl font-extrabold text-white">RWADex</p>
+          <p className="text-xl font-semibold  text-white">Exchange token in seconds</p>
+          <div className="  flex justify-center align-middle">
+            {!walletConnected &&
+              <div className="flex-col border-2 border-purple-900 mt-10 rounded-2xl p-32">
+                <button className="p-3 px-10  bg-white rounded-2xl font-bold w-[100%]  text-black  text-2xl">Swap</button>
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-40 text-white ml-7 h-40 ">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 17.25v1.007a3 3 0 01-.879 2.122L7.5 21h9l-.621-.621A3 3 0 0115 18.257V17.25m6-12V15a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 15V5.25m18 0A2.25 2.25 0 0018.75 3H5.25A2.25 2.25 0 003 5.25m18 0V12a2.25 2.25 0 01-2.25 2.25H5.25A2.25 2.25 0 013 12V5.25" />
+                </svg>
+                <p className="font-semibold text-2xl text-white" >Connect your wallet.</p>
+              </div>
+            }
 
-  className="bg-[rgb(35,33,48)] text-white outline-none p-5 px-10 text-2xl rounded-l-lg " placeholder="0.0"/>
-  <select className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
-    <option value={valueOfCoin==="RUSD"?"RBNT":"RUSD"}>{valueOfCoin==="RUSD"?"RUSD":"RBNT"}</option> 
-      </select>
-</div>
-<p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin==="RBNT"?utils.formatEther(ethBalance) :utils.formatEther(cdBalance)}</p>
-</div>
+            {walletConnected &&
+              <div className="flex-col border-2 border-purple-900 p-10 [&>div]:p-5 mt-10 rounded-2xl">
+                <div className="flex-col">
+                  <div className="flex ">
+                    <input onChange={async (e) => {
+                      setSwapAmount(e.target.value || "");
+                      // Calculate the amount of tokens user would receive after the swap
+                      await _getAmountOfTokensReceivedFromSwap(e.target.value || "0");
+                    }}
+                      className="outline-none  p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type="number" placeholder="0.0" />
+                    <select
 
-<button onClick={_swapTokens} className="py-2  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">Swap</button>
+                      onChange={async (e) => {
+                        setEthSelected(!ethSelected);
+                        // Initialize the values back to zero
+                        await _getAmountOfTokensReceivedFromSwap(0);
+                        setSwapAmount("");
+                        setCoin(e.target.value)
+                      }}
+                      className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
+                      <option value={"RUSD"}>RBNT</option>
+                      <option value={"RBNT"}>RUSD</option>
+                    </select>
+                  </div>
+                  <p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin === "RBNT" ? utils.formatEther(cdBalance) : utils.formatEther(ethBalance)} </p>
+                </div>
+                <div className="flex-col ">
+                  <div className="flex">
+                    <input
+                      value={utils.formatEther(tokenToBeReceivedAfterSwap)}
 
-{swapSuccess?<p className="text-white font-semibold text-xl text-center mt-4">Swap executed Successfully!</p>:<></>}
-</div>
-}
+                      className="bg-[rgb(35,33,48)] text-white outline-none p-5 px-10 text-2xl rounded-l-lg " placeholder="0.0" />
+                    <select className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
+                      <option value={valueOfCoin === "RUSD" ? "RBNT" : "RUSD"}>{valueOfCoin === "RUSD" ? "RUSD" : "RBNT"}</option>
+                    </select>
+                  </div>
+                  <p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin === "RBNT" ? utils.formatEther(ethBalance) : utils.formatEther(cdBalance)}</p>
+                </div>
 
-    </div>
+                <button onClick={_swapTokens} className="py-2  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">Swap</button>
+
+                {swapSuccess ? <p className="text-white font-semibold text-xl text-center mt-4">Swap executed Successfully!</p> : <></>}
+              </div>
+            }
+
+          </div>
+
+        </div>
+      </div>
 
     </div>
-    </div>
-    
-    </div> 
-    
+
   );
 }
-
-
-
-// <div>
-// <div className={styles.description}>
-//   You have:
-//   <br />
-//   {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
-//   {utils.formatEther(cdBalance)} rUSD
-//   <br />
-//   {utils.formatEther(ethBalance)} RBNT
-//   <br />
-//   {utils.formatEther(lpBalance)} RWADex LP tokens
-// </div>
-// <div>
-//   {/* If reserved CD is zero, render the state for liquidity zero where we ask the user
-//   how much initial liquidity he wants to add else just render the state where liquidity is not zero and
-//   we calculate based on the `Eth` amount specified by the user how much `CD` tokens can be added */}
-//   {utils.parseEther(reservedCD.toString()).eq(zero) ? (
-//     <div>
-//       <input
-//         type="number"
-//         placeholder="Amount of RBNT"
-//         onChange={(e) => setAddEther(e.target.value || "0")}
-//         className={styles.input}
-//       />
-//       <input
-//         type="number"
-//         placeholder="Amount of CryptoDev tokens"
-//         onChange={(e) =>
-//           setAddCDTokens(
-//             BigNumber.from(utils.parseEther(e.target.value || "0"))
-//           )
-//         }
-//         className={styles.input}
-//       />
-//       <button className={styles.button1} onClick={_addLiquidity}>
-//         Add
-//       </button>
-//     </div>
-
-
-
-// <div>
-    //   <Head>
-    //     <title>RWADex</title>
-    //     <meta name="description" content="Whitelist-Dapp" />
-    //     <link rel="icon" href="/favicon.ico" />
-    //   </Head>
-    //   <div className={styles.main}>
-    //     <div>
-    //       <h1 className={styles.title}>Welcome to RWADex!</h1>
-    //       <div className={styles.description}>
-    //         Exchange rUSD &#60;&#62; RBNT
-    //       </div>
-    //       <div>
-    //         <button
-    //           className={styles.button}
-    //           onClick={() => {
-    //             setLiquidityTab(!liquidityTab);
-    //           }}
-    //         >
-    //           Liquidity
-    //         </button>
-    //         <button
-    //           className={styles.button}
-    //           onClick={() => {
-    //             setLiquidityTab(false);
-    //           }}
-    //         >
-    //           Swap
-    //         </button>
-    //       </div>
-    //       {renderButton()}
-    //     </div>
-    //     <div>
-    //     </div>
-    //   </div>
-
-    //   <footer className={styles.footer}>
-    //   </footer>
-    // </div>
