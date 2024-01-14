@@ -1,4 +1,4 @@
-import { BigNumber, providers, utils } from "ethers";
+import { BigNumber, ethers, providers, utils } from "ethers";
 import Head from "next/head";
 import React, { useEffect, useRef, useState } from "react";
 import Web3Modal from "web3modal";
@@ -15,6 +15,8 @@ import {
   removeLiquidity,
 } from "../utils/removeLiquidity";
 import { swapTokens, getAmountOfTokensReceivedFromSwap } from "../utils/swap";
+import { WRBNT_ABI, WRBNT_ADDRESS } from "../constants";
+import toast from "react-hot-toast";
 
 export default function Home() {
 
@@ -25,6 +27,14 @@ export default function Home() {
   // the transaction has mined
   const [loading, setLoading] = useState(false);
   const [swapSuccess, setSwapSuccess] = useState(false)
+  const [swapTab, setSwapTab] = useState(true)
+  const [signer, setSigner] = useState()
+  const [wrapperContract, setWrapperContract] = useState(null)
+  const [wrapAmount, setWrapAmount] = useState()
+  const [mintValue, setMintValue] = useState("")
+  const [burnValue, setBurnValue] = useState("")
+  const [wrbntBalance, setWbrntBalance] = useState(0)
+  const [RBNTSelected, setRBNTSelected] = useState("RBNT")
   // We have two tabs in this dapp, Liquidity Tab and Swap Tab. This variable
   // keeps track of which Tab the user is on. If it is set to true this means
   // that the user is on `liquidity` tab else he is on `swap` tab
@@ -72,11 +82,15 @@ export default function Home() {
   // walletConnected keep track of whether the user's wallet is connected or not
   const [walletConnected, setWalletConnected] = useState(false);
 
+
   const getAmounts = async () => {
     try {
       const provider = await getProviderOrSigner(false);
       const signer = await getProviderOrSigner(true);
+      setSigner(signer)
       const address = await signer.getAddress();
+      console.log(signer);
+      console.log(address)
       // get the amount of eth in the user's account
       const _ethBalance = await getEtherBalance(provider, address);
       // get the amount of `rUSD` tokens held by the user
@@ -156,73 +170,6 @@ export default function Home() {
     }
   };
 
-  const _addLiquidity = async () => {
-    try {
-      // Convert the ether amount entered by the user to Bignumber
-      const addEtherWei = utils.parseEther(addEther.toString());
-      // Check if the values are zero
-      if (!addCDTokens.eq(zero) && !addEtherWei.eq(zero)) {
-        const signer = await getProviderOrSigner(true);
-        setLoading(true);
-        // call the addLiquidity function from the utils folder
-        await addLiquidity(signer, addCDTokens, addEtherWei);
-        setLoading(false);
-        // Reinitialize the CD tokens
-        setAddCDTokens(zero);
-        // Get amounts for all values after the liquidity has been added
-        await getAmounts();
-      } else {
-        setAddCDTokens(zero);
-      }
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-      setAddCDTokens(zero);
-    }
-  };
-
-  const _removeLiquidity = async () => {
-    try {
-      const signer = await getProviderOrSigner(true);
-      // Convert the LP tokens entered by the user to a BigNumber
-      const removeLPTokensWei = utils.parseEther(removeLPTokens);
-      setLoading(true);
-      // Call the removeLiquidity function from the `utils` folder
-      await removeLiquidity(signer, removeLPTokensWei);
-      setLoading(false);
-      await getAmounts();
-      setRemoveCD(zero);
-      setRemoveEther(zero);
-    } catch (err) {
-      console.error(err);
-      setLoading(false);
-      setRemoveCD(zero);
-      setRemoveEther(zero);
-    }
-  };
-
-  const _getTokensAfterRemove = async (_removeLPTokens) => {
-    try {
-      const provider = await getProviderOrSigner();
-      // Convert the LP tokens entered by the user to a BigNumber
-      const removeLPTokenWei = utils.parseEther(_removeLPTokens);
-      // Get the Eth reserves within the exchange contract
-      const _ethBalance = await getEtherBalance(provider, null, true);
-      // get the rUSD reserves from the contract
-      const cryptoDevTokenReserve = await getReserveOfCDTokens(provider);
-      // call the getTokensAfterRemove from the utils folder
-      const { _removeEther, _removeCD } = await getTokensAfterRemove(
-        provider,
-        removeLPTokenWei,
-        _ethBalance,
-        cryptoDevTokenReserve
-      );
-      setRemoveEther(_removeEther);
-      setRemoveCD(_removeCD);
-    } catch (err) {
-      console.error(err);
-    }
-  };
 
   const connectWallet = async () => {
     try {
@@ -250,6 +197,7 @@ export default function Home() {
 
     if (needSigner) {
       const signer = web3Provider.getSigner();
+      console.log(signer)
       return signer;
     }
     return web3Provider;
@@ -264,121 +212,94 @@ export default function Home() {
       });
       connectWallet();
       getAmounts();
-    } else {
+    } 
+    else {
       getAmounts();
+      handleWrapperButton()
+      fetchWRBNTBalance()
     }
-  }, [walletConnected]);
+  }, [walletConnected,mintValue,RBNTSelected]);
 
-  const renderButton = () => {
-    if (!walletConnected) {
-      return (
-        <button onClick={connectWallet} className={styles.button}>
-          Connect your wallet
-        </button>
-      );
-    }
-
-    if (loading) {
-      return <button className={styles.button}>Loading...</button>;
-    }
-
-    if (liquidityTab) {
-      return (
-        <div>
-          <div className={styles.description}>
-            You have:
-            <br />
-            {utils.formatEther(cdBalance)} rUSD
-            <br />
-            {utils.formatEther(ethBalance)} RBNT
-            <br />
-            {utils.formatEther(lpBalance)} RWADex LP tokens
-          </div>
-          <div>
-            {utils.parseEther(reservedCD.toString()).eq(zero) ? (
-              <div>
-                <input
-                  type="number"
-                  placeholder="Amount of RBNT"
-                  onChange={(e) => setAddEther(e.target.value || "0")}
-                  className={styles.input}
-                />
-                <input
-                  type="number"
-                  placeholder="Amount of CryptoDev tokens"
-                  onChange={(e) =>
-                    setAddCDTokens(
-                      BigNumber.from(utils.parseEther(e.target.value || "0"))
-                    )
-                  }
-                  className={styles.input}
-                />
-                <button className={styles.button1} onClick={_addLiquidity}>
-                  Add
-                </button>
-              </div>
-            ) : (
-              <div>
-                <input
-                  type="number"
-                  placeholder="Amount of RBNT"
-                  onChange={async (e) => {
-                    setAddEther(e.target.value || "0");
-                    // calculate the number of CD tokens that
-                    // can be added given  `e.target.value` amount of Eth
-                    const _addCDTokens = await calculateCD(
-                      e.target.value || "0",
-                      etherBalanceContract,
-                      reservedCD
-                    );
-                    setAddCDTokens(_addCDTokens);
-                  }}
-                  className={styles.input}
-                />
-                <div className={styles.inputDiv}>
-                  {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
-                  {`You will need ${utils.formatEther(addCDTokens)} rUSD
-                  Tokens`}
-                </div>
-                <button className={styles.button1} onClick={_addLiquidity}>
-                  Add
-                </button>
-              </div>
-            )}
-            <div>
-              <input
-                type="number"
-                placeholder="Amount of LP Tokens"
-                onChange={async (e) => {
-                  setRemoveLPTokens(e.target.value || "0");
-                  // Calculate the Amount of RBNT and CD tokens that the user would receive
-                  // After he removes `e.target.value` amount of `LP` tokens
-                  await _getTokensAfterRemove(e.target.value || "0");
-                }}
-                className={styles.input}
-              />
-              <div className={styles.inputDiv}>
-                {/* Convert the BigNumber to string using the formatEther function from ethers.js */}
-                {`You will get ${utils.formatEther(removeCD)} rUSD and ${utils.formatEther(removeEther)} RBNT`}
-              </div>
-              <button className={styles.button1} onClick={_removeLiquidity}>
-                Remove
-              </button>
-            </div>
-          </div>
-        </div>
-      );
-    } else {
-      return (
-        <div>
-        </div>
-      );
+  const handleWrapperButton = async () => {
+    try {
+      const provider = new providers.Web3Provider(window.ethereum);
+      const accounts = await provider.listAccounts();
+      await fetchWRBNTBalance()
+      // Check if any account is connected
+      if (accounts.length > 0) {
+        // Now you have the connected wallet address (connectedAddress)
+        const wrapperContract = new ethers.Contract(WRBNT_ADDRESS, WRBNT_ABI, signer)
+        setWrapperContract(wrapperContract)
+        console.log(wrapperContract)
+      } else {
+        console.log("No wallet connected");
+        // No wallet is connected
+      }
+    } catch (error) {
+      console.error("Error checking connected wallet:", error);
+      // Handle errors
     }
   };
 
+  const fetchWRBNTBalance = async () => {
+    try {
+      const address = await wrapperContract.signer.getAddress();
+      const balance = await wrapperContract.balanceOf(address);
+      setWbrntBalance(balance);
+    } catch (error) {
+      console.error("Error fetching balance:", error);
+    }
+  };
+
+  const handleMint = async (e) => {
+
+    const amountTomint = ethers.utils.parseEther(mintValue)
+    try {
+      const tx = await wrapperContract.mint({ value: amountTomint })
+      await tx.wait();
+      setMintValue("")
+      console.log("Mint transaction successful")
+      fetchWRBNTBalance()
+      toast.success("Mint successful")
+    } catch (e) {
+      console.log("Execution error")
+      console.log(e)
+    }
+  }
+
+  const handleBurn = async (e) => {
+    const amountToRBNT = ethers.utils.parseEther(mintValue)
+    try {
+      const tx = await wrapperContract.burn(amountToRBNT)
+      await tx.wait()
+      setMintValue("")
+      fetchWRBNTBalance()
+      toast.success("Unwrapped Successfully")
+    } catch (e) {
+      console.log("Burn failed")
+      console.log(e)
+    }
+  }
+
+  const handleInputChange = (e) => {
+    setMintValue(e.target.value)
+  }
+
+  const handleWrap = async () => {
+    if (RBNTSelected === "RBNT") {
+      await handleMint()
+    }
+    if (RBNTSelected === "WRBNT") {
+      await handleBurn()
+    }
+
+    await fetchWRBNTBalance();
+  }
+
+
   return (
 
-    <div className="w-[100%] h-[100vh] bg-[rgb(32,30,45)]">
+    <div className="w-[100%] h-[100vh] ">
 
 
       <div className="flex-col ">
@@ -396,6 +317,15 @@ export default function Home() {
         <div className="flex-col [&>*]:flex gap-10 [&>*]:justify-center ">
           <p className="text-4xl font-extrabold text-white">RWADex</p>
           <p className="text-xl font-semibold  text-white">Exchange token in seconds</p>
+          <div className="flex items-center justify-center mt-5 gap-10 font-bold text-white text-xl border-2 border-[#581C87] w-64 rounded-lg bg-[#581C87] mx-auto">
+            <button onClick={() => setSwapTab(true)}>Swap</button>
+            <p className=" h-10 w-1 text-white bg-white"></p>
+            <button onClick={() => {
+              setSwapTab(false)
+              handleWrapperButton()
+            }}>Wrap</button>
+
+          </div>
           <div className="  flex justify-center align-middle">
             {!walletConnected &&
               <div className="flex-col border-2 border-purple-900 mt-10 rounded-2xl p-32">
@@ -407,7 +337,7 @@ export default function Home() {
               </div>
             }
 
-            {walletConnected &&
+            {walletConnected && swapTab &&
               <div className="flex-col border-2 border-purple-900 p-10 [&>div]:p-5 mt-10 rounded-2xl">
                 <div className="flex-col">
                   <div className="flex ">
@@ -431,7 +361,7 @@ export default function Home() {
                       <option value={"RBNT"}>RUSD</option>
                     </select>
                   </div>
-                  <p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin === "RBNT" ? utils.formatEther(cdBalance) : utils.formatEther(ethBalance)} </p>
+                  <p className="text-white font-semibold mx-3 my-2">Balance: {valueOfCoin === "RBNT" ? utils.formatEther(cdBalance) :utils.formatEther(ethBalance)} </p>
                 </div>
                 <div className="flex-col ">
                   <div className="flex">
@@ -449,6 +379,31 @@ export default function Home() {
                 <button onClick={_swapTokens} className="py-2  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">Swap</button>
 
                 {swapSuccess ? <p className="text-white font-semibold text-xl text-center mt-4">Swap executed Successfully!</p> : <></>}
+              </div>
+            }
+
+            {
+              walletConnected && !swapTab &&
+              <div className="flex-col border-2 border-purple-900 p-10 [&>div]:p-5 mt-10 rounded-2xl" >
+                <div className=" flex flex-col">
+                  <div className="flex">
+                    <input placeholder="RBNT" className="outline-none min-w-[347px]  p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type='number' value={mintValue} onChange={handleInputChange} />
+                    <select onChange={(e) => { setRBNTSelected(e.target.value) }} className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
+                      <option value={"RBNT"}>RBNT</option>
+                      <option value={"WRBNT"}>WRBNT</option>
+                    </select>
+                  </div>
+                  <p className="text-white font-semibold mx-3 my-2">Balance: {RBNTSelected === "RBNT" ? utils.formatEther(ethBalance) : utils.formatEther(wrbntBalance)}</p>
+                </div>
+                <div className=" flex flex-col">
+                  <div className="flex">
+                    <input placeholder="WRBNT" className="outline-none min-w-[358px] p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type="number" value={mintValue} onChange={handleInputChange} />
+                    <p className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-5 flex items-center">{RBNTSelected === 'RBNT' ? "WRBNT" : "RBNT"}</p>
+                  </div>
+                  <p className="text-white font-semibold mx-3 my-2">Balance: {RBNTSelected === "RBNT" ? utils.formatEther(wrbntBalance) : utils.formatEther(ethBalance)}</p>
+                </div>
+                <button onClick={handleWrap} className="py-2 hover:bg-purple-200  w-[100%]  bg-white rounded-2xl font-bold   text-black  text-xl">{RBNTSelected === "RBNT" ? "Wrap" : "Unwrap"}</button>
+
               </div>
             }
 
