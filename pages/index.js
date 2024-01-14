@@ -382,7 +382,7 @@ export default function Home() {
               <div className="flex-col border-2 border-purple-900 p-10 [&>div]:p-5 mt-10 rounded-2xl" >
                 <div className=" flex flex-col">
                   <div className="flex">
-                    <input placeholder="RBNT" className="outline-none min-w-[347px]  p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type='number' value={mintValue} onChange={handleInputChange} />
+                    <input placeholder="0.0" className="outline-none min-w-[347px]  p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type='number' value={mintValue} onChange={handleInputChange} />
                     <select onChange={(e) => { setRBNTSelected(e.target.value) }} className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-2">
                       <option value={"RBNT"}>RBNT</option>
                       <option value={"WRBNT"}>WRBNT</option>
@@ -392,7 +392,7 @@ export default function Home() {
                 </div>
                 <div className=" flex flex-col">
                   <div className="flex">
-                    <input placeholder="WRBNT" className="outline-none min-w-[358px] p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type="number" value={mintValue} onChange={handleInputChange} />
+                    <input placeholder="0.0" className="outline-none min-w-[358px] p-5 bg-[rgb(35,33,48)]  text-white px-10 text-2xl rounded-l-lg" type="number" value={mintValue} onChange={handleInputChange} />
                     <p className="bg-[rgb(35,33,48)] text-white font-semibold outline-none px-5 flex items-center">{RBNTSelected === 'RBNT' ? "WRBNT" : "RBNT"}</p>
                   </div>
                   <p className="text-white font-semibold mx-3 my-2">Balance: {RBNTSelected === "RBNT" ? utils.formatEther(wrbntBalance) : utils.formatEther(ethBalance)}</p>
