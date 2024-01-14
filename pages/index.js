@@ -89,8 +89,6 @@ export default function Home() {
       const signer = await getProviderOrSigner(true);
       setSigner(signer)
       const address = await signer.getAddress();
-      console.log(signer);
-      console.log(address)
       // get the amount of eth in the user's account
       const _ethBalance = await getEtherBalance(provider, address);
       // get the amount of `rUSD` tokens held by the user
@@ -197,7 +195,6 @@ export default function Home() {
 
     if (needSigner) {
       const signer = web3Provider.getSigner();
-      console.log(signer)
       return signer;
     }
     return web3Provider;
@@ -230,7 +227,6 @@ export default function Home() {
         // Now you have the connected wallet address (connectedAddress)
         const wrapperContract = new ethers.Contract(WRBNT_ADDRESS, WRBNT_ABI, signer)
         setWrapperContract(wrapperContract)
-        console.log(wrapperContract)
       } else {
         console.log("No wallet connected");
         // No wallet is connected
@@ -258,7 +254,6 @@ export default function Home() {
       const tx = await wrapperContract.mint({ value: amountTomint })
       await tx.wait();
       setMintValue("")
-      console.log("Mint transaction successful")
       fetchWRBNTBalance()
       toast.success("Mint successful")
     } catch (e) {
